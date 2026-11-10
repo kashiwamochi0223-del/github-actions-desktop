@@ -1,12 +1,12 @@
 > [!CAUTION]
-> ⚠️This project is intended for testing and verification purposes only.⚠️
+> ⚠️このプロジェクトは、テストおよび検証目的でのみ使用することを想定しています。⚠️
 
 # GitHub Actions Desktop
 
-## Usage
+## 使用方法
 
-1. Fork this repository
-2. Open [Desktop](../../actions/workflows/desktop.yml) Workflow
-3. Run workflow
-4. Open Desktop url
-5. Stop with `curl x` or `x/` in Address Bar
+1. このリポジトリをFork（フォーク）する
+2. [Desktopワークフロー](../../actions/workflows/desktop.yml)を開く
+3. ワークフローを実行する
+4. 表示されたDesktopのURLを開く
+5. `curl x` または `x/` をアドレスバーに入力してセッションを停止する

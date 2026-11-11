@@ -8,20 +8,27 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Prepare Chrome profile directory
-        run: mkdir -p "${{ runner.temp }}/chrome-config"
+        run: mkdir -p "${{ runner.temp }}/chrome-config" "${{ runner.temp }}/chrome-config-snapshot"
 
       - name: Restore Chrome profile
         uses: actions/cache/restore@v4
         with:
-          path: ${{ runner.temp }}/chrome-config
+          path: ${{ runner.temp }}/chrome-config-snapshot
           key: chrome-profile-${{ github.actor_id }}-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: |
             chrome-profile-${{ github.actor_id }}-
+
+      - name: Prepare restored profile for Chrome
+        run: cp -a "${{ runner.temp }}/chrome-config-snapshot/." "${{ runner.temp }}/chrome-config/"
+
+      - name: Install Chrome profile cache client
+        run: npm install --prefix "${{ runner.temp }}/chrome-cache-sdk" @actions/cache@4
 
       - name: Start Docker
         background: true
         run: |
           docker run -d \
+            --name chrome-profile \
             --network host \
             -v "${{ runner.temp }}/chrome-config:/config" \
             --add-host x:127.0.0.1 \
@@ -32,16 +39,19 @@ jobs:
             ghcr.io/linuxserver/chrome
 
       - name: Desktop URL https://<random-subdomain>.trycloudflare.com / Stop with curl x or x/ in Address Bar
+        background: true
         run: |
           wget -q https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
           sudo dpkg -i cloudflared-linux-amd64.deb >/dev/null 2>&1
-          echo "<?php passthru('pkill cloudflared');" > index.php
+          echo "<?php passthru('touch ${{ runner.temp }}/chrome-session-stop; pkill cloudflared');" > index.php
           sudo nohup php -S 0.0.0.0:80 2>/dev/null &
           cloudflared tunnel --url http://localhost:3000
 
-      - name: Save Chrome profile
-        if: always()
-        uses: actions/cache/save@v4
-        with:
-          path: ${{ runner.temp }}/chrome-config
-          key: chrome-profile-${{ github.actor_id }}-${{ github.run_id }}-${{ github.run_attempt }}
+      - name: Save Chrome profile during session
+        uses: ./.github/actions/chrome-profile-cache
+        env:
+          PROFILE_DIR: ${{ runner.temp }}/chrome-config
+          PROFILE_CACHE_BASE: chrome-profile-${{ github.actor_id }}-${{ github.run_id }}-${{ github.run_attempt }}
+          PROFILE_STOP_FILE: ${{ runner.temp }}/chrome-session-stop
+          PROFILE_CONTAINER: chrome-profile
+          PROFILE_CACHE_INTERVAL_MS: 1800000

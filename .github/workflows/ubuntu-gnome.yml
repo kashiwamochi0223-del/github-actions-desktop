@@ -59,6 +59,7 @@ jobs:
             XDG_SESSION_DESKTOP=gnome \
             XDG_SESSION_TYPE=x11 \
             dbus-run-session -- "$PWD/.venv/bin/selkies" \
+              --port=8090 \
               --enable-basic-auth=false > "$RUNNER_TEMP/selkies.log" 2>&1 &
 
           sudo sed -i 's/^Prompt=.*$/Prompt=never/' /etc/update-manager/release-upgrades
@@ -76,4 +77,4 @@ jobs:
           sudo dpkg -i cloudflared-linux-amd64.deb >/dev/null 2>&1
           echo "<?php passthru('pkill cloudflared');" > index.php
           sudo nohup php -S 0.0.0.0:80 2>/dev/null &
-          cloudflared tunnel --url http://localhost:8080
+          cloudflared tunnel --url http://localhost:8090

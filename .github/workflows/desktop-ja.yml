@@ -18,6 +18,8 @@ jobs:
             --restart unless-stopped \
             -e LC_ALL=ja_JP.UTF-8 \
             -e TZ=Asia/Tokyo \
+            -e CUSTOM_PORT=8090 \
+            -e CUSTOM_HTTPS_PORT=8091 \
             ghcr.io/linuxserver/webtop
 
       - name: Desktop URL https://<random-subdomain>.trycloudflare.com / Stop with curl x or x/ in Address Bar
@@ -26,4 +28,4 @@ jobs:
           sudo dpkg -i cloudflared-linux-amd64.deb >/dev/null 2>&1
           echo "<?php passthru('pkill cloudflared');" > index.php
           sudo nohup php -S 0.0.0.0:80 2>/dev/null &
-          cloudflared tunnel --url http://localhost:3000
+          cloudflared tunnel --url http://localhost:8090

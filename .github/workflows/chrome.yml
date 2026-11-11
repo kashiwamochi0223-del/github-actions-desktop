@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Prepare Chrome profile directory
-        run: mkdir -p "${{ runner.temp }}/chrome-config" "${{ runner.temp }}/chrome-config-snapshot"
+        run: mkdir -p "${{ runner.temp }}/chrome-config/.config/google-chrome" "${{ runner.temp }}/chrome-config-snapshot"
 
       - name: Restore Chrome profile
         uses: actions/cache/restore@v4
@@ -19,7 +19,7 @@ jobs:
             chrome-profile-${{ github.actor_id }}-
 
       - name: Prepare restored profile for Chrome
-        run: cp -a "${{ runner.temp }}/chrome-config-snapshot/." "${{ runner.temp }}/chrome-config/"
+        run: cp -a "${{ runner.temp }}/chrome-config-snapshot/." "${{ runner.temp }}/chrome-config/.config/google-chrome/"
 
       - name: Install Chrome profile cache client
         run: npm install --prefix "${{ runner.temp }}/chrome-cache-sdk" @actions/cache@4
@@ -35,6 +35,8 @@ jobs:
             --security-opt seccomp=unconfined \
             --shm-size=1gb \
             --restart unless-stopped \
+            -e PUID="$(id -u)" \
+            -e PGID="$(id -g)" \
             -e CHROME_CLI=https://duckduckgo.com/ \
             ghcr.io/linuxserver/chrome
 
@@ -50,8 +52,10 @@ jobs:
       - name: Save Chrome profile during session
         uses: ./.github/actions/chrome-profile-cache
         env:
-          PROFILE_DIR: ${{ runner.temp }}/chrome-config
+          PROFILE_DIR: ${{ runner.temp }}/chrome-config/.config/google-chrome
           PROFILE_CACHE_BASE: chrome-profile-${{ github.actor_id }}-${{ github.run_id }}-${{ github.run_attempt }}
           PROFILE_STOP_FILE: ${{ runner.temp }}/chrome-session-stop
           PROFILE_CONTAINER: chrome-profile
           PROFILE_CACHE_INTERVAL_MS: 1800000
+          PROFILE_COOKIE_MIN_INTERVAL_MS: 300000
+          PROFILE_COOKIE_DEBOUNCE_MS: 30000

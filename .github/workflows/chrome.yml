@@ -7,11 +7,23 @@ jobs:
   desktop:
     runs-on: ubuntu-latest
     steps:
+      - name: Prepare Chrome profile directory
+        run: mkdir -p "${{ runner.temp }}/chrome-config"
+
+      - name: Restore Chrome profile
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ runner.temp }}/chrome-config
+          key: chrome-profile-${{ github.actor_id }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            chrome-profile-${{ github.actor_id }}-
+
       - name: Start Docker
         background: true
         run: |
           docker run -d \
             --network host \
+            -v "${{ runner.temp }}/chrome-config:/config" \
             --add-host x:127.0.0.1 \
             --security-opt seccomp=unconfined \
             --shm-size=1gb \
@@ -26,3 +38,10 @@ jobs:
           echo "<?php passthru('pkill cloudflared');" > index.php
           sudo nohup php -S 0.0.0.0:80 2>/dev/null &
           cloudflared tunnel --url http://localhost:3000
+
+      - name: Save Chrome profile
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ runner.temp }}/chrome-config
+          key: chrome-profile-${{ github.actor_id }}-${{ github.run_id }}-${{ github.run_attempt }}

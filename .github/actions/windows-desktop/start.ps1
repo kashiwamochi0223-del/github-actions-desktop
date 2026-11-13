@@ -31,6 +31,8 @@ Invoke-WebRequest `
 $msiArgs = @(
   '/i', $installer, '/quiet', '/norestart',
   'ADDLOCAL=Server',
+  'SET_ALLOWLOOPBACK=1',
+  'VALUE_OF_ALLOWLOOPBACK=1',
   'SERVER_REGISTER_AS_SERVICE=1',
   'SERVER_ADD_FIREWALL_EXCEPTION=1',
   'SET_USEVNCAUTHENTICATION=1'

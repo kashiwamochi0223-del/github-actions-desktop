@@ -1,5 +1,0 @@
-name: Chrome profile cache
-description: "Periodically snapshots and saves the Chrome profile"
-runs:
-  using: node20
-  main: index.js

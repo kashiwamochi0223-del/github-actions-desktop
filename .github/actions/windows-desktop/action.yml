@@ -1,0 +1,25 @@
+name: Windows desktop
+description: Start a browser-accessible Windows desktop session
+inputs:
+  browser:
+    description: Browser to launch
+    required: false
+    default: ''
+  password:
+    description: Optional VNC password (TightVNC supports up to 8 characters)
+    required: false
+    default: ''
+  profile-dir:
+    description: Optional browser profile directory
+    required: false
+    default: ''
+runs:
+  using: composite
+  steps:
+    - name: Start Windows desktop
+      shell: pwsh
+      env:
+        DESKTOP_BROWSER: ${{ inputs.browser }}
+        DESKTOP_PASSWORD: ${{ inputs.password }}
+        DESKTOP_PROFILE_DIR: ${{ inputs.profile-dir }}
+      run: ./.github/actions/windows-desktop/start.ps1

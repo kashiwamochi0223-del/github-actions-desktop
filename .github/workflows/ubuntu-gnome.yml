@@ -1,80 +1,13 @@
-name: Ubuntu GNOME
+name: Windows Desktop (GNOME workflow replaced)
 
 on:
   workflow_dispatch:
 
 jobs:
-  ubuntu-gnome:
-    runs-on: ubuntu-latest
-
+  desktop:
+    runs-on: windows-latest
     steps:
-      - parallel:
-        - name: Install GNOME
-          run: |
-            set -euo pipefail
-            sudo apt-get update
-            sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
-              dbus-x11 \
-              fonts-noto-cjk \
-              gnome-shell \
-              gnome-terminal \
-              libpulse0 \
-              libva-drm2 \
-              libva-wayland2 \
-              libva-x11-2 \
-              pulseaudio \
-              pulseaudio-utils \
-              xvfb
-  
-        - name: Install Selkies
-          run: |
-            set -euo pipefail
-            git clone https://github.com/selkies-project/selkies.git "$RUNNER_TEMP/selkies"
-            cd "$RUNNER_TEMP/selkies"
-            python3 -m venv .venv
-            .venv/bin/python -m pip install --upgrade pip
-            .venv/bin/python -m pip install \
-              https://github.com/selkies-project/pixelflux/releases/download/f8cda2e/pixelflux-2.1.0-cp312-cp312-manylinux_2_28_x86_64.whl \
-              https://github.com/selkies-project/pcmflux/releases/download/a489f79/pcmflux-2.1.0-cp312-cp312-manylinux_2_28_x86_64.whl
-            ./scripts/ci/build-web.sh
-            .venv/bin/python -m pip install -e .
+      - uses: actions/checkout@v4
 
-      - name: Start GNOME, Selkies
-        run: |
-          set -euo pipefail
-          cd "$RUNNER_TEMP/selkies"
-
-          Xvfb :99 -screen 0 1920x1080x24 > "$RUNNER_TEMP/xvfb.log" 2>&1 &
-
-          pulseaudio --start --exit-idle-time=-1
-
-          nohup env DISPLAY=:99 \
-            XDG_CURRENT_DESKTOP=GNOME \
-            XDG_SESSION_DESKTOP=gnome \
-            XDG_SESSION_TYPE=x11 \
-            dbus-run-session -- gnome-shell --x11 > "$RUNNER_TEMP/gnome-shell.log" 2>&1 &
-
-          nohup env DISPLAY=:99 \
-            XDG_CURRENT_DESKTOP=GNOME \
-            XDG_SESSION_DESKTOP=gnome \
-            XDG_SESSION_TYPE=x11 \
-            dbus-run-session -- "$PWD/.venv/bin/selkies" \
-              --port=8090 \
-              --enable-basic-auth=false > "$RUNNER_TEMP/selkies.log" 2>&1 &
-
-          sudo sed -i 's/^Prompt=.*$/Prompt=never/' /etc/update-manager/release-upgrades
-          gsettings set org.gnome.desktop.background picture-uri 'file:///usr/share/backgrounds/ubuntu-wallpaper-d.png'
-          gsettings set org.gnome.desktop.background picture-uri-dark 'file:///usr/share/backgrounds/ubuntu-wallpaper-d.png'
-          gsettings set org.gnome.desktop.lockdown disable-lock-screen true
-          gsettings set org.gnome.desktop.screensaver lock-enabled false
-          gsettings set org.gnome.desktop.screensaver idle-activation-enabled false
-          gsettings set org.gnome.desktop.session idle-delay 0
-          gsettings set org.gnome.settings-daemon.plugins.power sleep-inactive-ac-type 'nothing'
-
-      - name: Desktop URL https://<random-subdomain>.trycloudflare.com / Stop with curl x or x/ in Address Bar
-        run: |
-          wget -q https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
-          sudo dpkg -i cloudflared-linux-amd64.deb >/dev/null 2>&1
-          echo "<?php passthru('pkill cloudflared');" > index.php
-          sudo nohup php -S 0.0.0.0:80 2>/dev/null &
-          cloudflared tunnel --url http://localhost:8090
+      - name: Start Windows desktop
+        uses: ./.github/actions/windows-desktop

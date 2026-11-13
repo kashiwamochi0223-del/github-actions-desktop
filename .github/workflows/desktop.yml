@@ -1,52 +1,13 @@
-
-name: Desktop
+name: Windows Desktop
 
 on:
   workflow_dispatch:
 
 jobs:
   desktop:
-    runs-on: ubuntu-latest
-
+    runs-on: windows-latest
     steps:
-      - name: Start Docker
-        run: |
-          docker run -d \
-            --name webtop \
-            --network host \
-            --add-host x:127.0.0.1 \
-            --security-opt seccomp=unconfined \
-            --shm-size=1gb \
-            --restart unless-stopped \
-            -e CUSTOM_PORT=8090 \
-            -e CUSTOM_HTTPS_PORT=8091 \
-            ghcr.io/linuxserver/webtop:ubuntu-xfce
+      - uses: actions/checkout@v4
 
-      - name: Install Claude Desktop
-        run: |
-          docker exec -u root webtop bash -lc '
-            set -e
-
-            apt-get update
-            apt-get install -y curl ca-certificates
-
-            mkdir -p /usr/share/keyrings
-
-            curl -fsSLo \
-              /usr/share/keyrings/claude-desktop-archive-keyring.asc \
-              https://downloads.claude.ai/claude-desktop/key.asc
-
-            echo "deb [signed-by=/usr/share/keyrings/claude-desktop-archive-keyring.asc] https://downloads.claude.ai/claude-desktop/apt/stable stable main" \
-              > /etc/apt/sources.list.d/claude-desktop.list
-
-            apt-get update
-            apt-get install -y claude-desktop
-          '
-
-      - name: Desktop URL
-        run: |
-          wget -q https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
-          sudo dpkg -i cloudflared-linux-amd64.deb
-          echo "<?php passthru('pkill cloudflared');" > index.php
-          sudo nohup php -S 0.0.0.0:80 >/dev/null 2>&1 &
-          cloudflared tunnel --url http://localhost:8090
+      - name: Start Windows desktop
+        uses: ./.github/actions/windows-desktop

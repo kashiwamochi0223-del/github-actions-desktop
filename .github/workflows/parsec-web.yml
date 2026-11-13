@@ -1,0 +1,16 @@
+name: Parsec Web (experimental)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  desktop:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Start password-protected desktop with Parsec
+        uses: ./.github/actions/windows-desktop
+        with:
+          password: ${{ secrets.PARSEC_BOOTSTRAP_VNC_PASSWORD }}
+          parsec: 'true'

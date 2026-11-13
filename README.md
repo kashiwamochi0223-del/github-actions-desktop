@@ -9,6 +9,12 @@
 
 各ワークフローは `windows-latest` runner 上で Windows デスクトップを起動し、noVNC と Cloudflare Tunnel 経由でブラウザーから接続します。通常のワークフローには VNC パスワードがありません。`Windows Desktop Password` では ASCII 英数字1〜8文字の VNC パスワードを指定できます。
 
+## Parsec Web（実験）
+
+[Parsec Webワークフロー](../../actions/workflows/parsec-web.yml)は、Parsecホストを追加で起動します。使用前にリポジトリの Actions secret `PARSEC_BOOTSTRAP_VNC_PASSWORD` に、ランダムなASCII英数字1〜8文字の一時的なVNCパスワードを登録してください。ワークフローのログに表示されるURLをnoVNCで開き、そのパスワードで接続してParsecにサインインします。その後、ChromebookのChromeで [Parsec Web](https://web.parsec.app/) を開いて同じアカウントで接続してください。検証後は不要になったSecretを削除してください。
+
+この経路はGitHub-hosted Windows runner上で未検証です。runnerの映像エンコーダーやParsecのホスト互換性により接続できない場合があります。検証中は既存のWindows Desktop/noVNCワークフローを引き続き利用できます。
+
 Chrome、Firefox、Edge のワークフローでは、それぞれのブラウザーを起動します。Chromium ワークフローも、runner にインストール済みの Chrome を起動します。Chrome のプロファイルは Actions cache に保存されます。
 
 旧 Linux デスクトップ、ディストリビューション、Claude Desktop、LM Studio、VPN、SSH の各ワークフローは、Windows デスクトップに置き換わりました。これらの Linux 固有環境や追加機能は含まれません。日本語ワークフローも、Windows のシステム言語は変更しません。

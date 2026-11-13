@@ -24,6 +24,23 @@ if ($env:DESKTOP_PASSWORD -and $env:DESKTOP_PASSWORD -notmatch '^[a-zA-Z0-9]{1,8
   throw 'TightVNC passwords must contain 1-8 ASCII letters or numbers.'
 }
 
+if ($env:DESKTOP_PARSEC -eq 'true') {
+  if (-not $env:DESKTOP_PASSWORD) {
+    throw 'A VNC password is required when starting the Parsec host.'
+  }
+
+  winget install --id Parsec.Parsec --exact --silent --scope machine --accept-source-agreements --accept-package-agreements
+  if ($LASTEXITCODE -ne 0) {
+    throw "Parsec installation failed with exit code $LASTEXITCODE."
+  }
+
+  $parsec = Join-Path $env:ProgramFiles 'Parsec\parsecd.exe'
+  if (-not (Test-Path $parsec)) {
+    throw "Parsec host executable was not found at $parsec."
+  }
+  Start-Process -FilePath $parsec
+}
+
 Invoke-WebRequest `
   -Uri 'https://www.tightvnc.com/download/2.8.90/tightvnc-2.8.90-gpl-setup-64bit.msi' `
   -OutFile $installer

@@ -13,6 +13,10 @@ inputs:
     description: Optional browser profile directory
     required: false
     default: ''
+  parsec:
+    description: Install and launch the Parsec host
+    required: false
+    default: 'false'
 runs:
   using: composite
   steps:
@@ -22,4 +26,5 @@ runs:
         DESKTOP_BROWSER: ${{ inputs.browser }}
         DESKTOP_PASSWORD: ${{ inputs.password }}
         DESKTOP_PROFILE_DIR: ${{ inputs.profile-dir }}
+        DESKTOP_PARSEC: ${{ inputs.parsec }}
       run: ./.github/actions/windows-desktop/start.ps1
